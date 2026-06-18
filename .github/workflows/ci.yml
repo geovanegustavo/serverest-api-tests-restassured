@@ -39,7 +39,7 @@ jobs:
 
       # Build e testes
       - name: Run tests
-        run: ./gradlew clean test --info
+        run: ./gradlew clean test --info --stacktrace
 
       # Upload dos relatórios de teste como artefato
       - name: Upload test reports
