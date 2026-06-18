@@ -1,6 +1,7 @@
 package serverest.tests;
 
 import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 import org.testng.annotations.Test;
 import serverest.model.Usuario;
 import serverest.util.TokenHolder;
@@ -25,10 +26,12 @@ public class UsuarioTest {
 
         given()
             .contentType("application/json")
+            .log().all()
             .body(usuario)
         .when()
             .post("/usuarios")
         .then()
+            .log().all()
             .statusCode(201)
             .body("message", equalTo("Cadastro realizado com sucesso"))
             .body("_id", notNullValue());

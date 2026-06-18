@@ -20,10 +20,12 @@ public class LoginTest {
 
         Response response = given()
             .contentType("application/json")
+            .log().all()
             .body(body)
         .when()
             .post("/login")
         .then()
+            .log().all()
             .statusCode(200)
             .body("message", equalTo("Login realizado com sucesso"))
             .extract().response();
