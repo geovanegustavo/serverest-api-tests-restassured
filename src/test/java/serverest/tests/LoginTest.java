@@ -6,6 +6,7 @@ import org.testng.annotations.Test;
 import serverest.util.TokenHolder;
 
 import static io.restassured.RestAssured.given;
+import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static org.hamcrest.Matchers.equalTo;
 
 public class LoginTest {
@@ -31,6 +32,7 @@ public class LoginTest {
             .log().all()
             .statusCode(200)
             .body("message", equalTo("Login realizado com sucesso"))
+            .body(matchesJsonSchemaInClasspath("schemas/login-schema.json"))
             .extract().response();
 
         TokenHolder.token = response.jsonPath().getString("authorization").replace("Bearer ", "");
