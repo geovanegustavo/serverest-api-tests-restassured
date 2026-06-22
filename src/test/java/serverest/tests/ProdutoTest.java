@@ -49,12 +49,13 @@ public class ProdutoTest {
         given()
             .contentType("application/json")
             .header("Authorization", "Bearer " + TokenHolder.token)
-            .log().body()
+            .log().all()
             .body(produtoCriado)
         .when()
             .post("/produtos")
         .then()
-            .log().ifValidationFails()
+            //.log().ifValidationFails()
+            .log().all()
             .statusCode(400)
             .body("message", equalTo("Já existe produto com esse nome"))
             .body(matchesJsonSchemaInClasspath("schemas/cadastrar-produto-cadastrado-schema.json"));
@@ -69,11 +70,11 @@ public class ProdutoTest {
         given()
             .header("Authorization", "Bearer " + TokenHolder.token)
             .pathParam("id", produtoId)
-            .log().uri()
+            .log().all()
         .when()
             .get("/produtos/{id}")
         .then()
-            .log().ifValidationFails()
+            .log().all()
             .statusCode(200)
             .body("_id", equalTo(produtoId))
             .body("nome", equalTo(produtoCriado.getNome()))
@@ -82,4 +83,70 @@ public class ProdutoTest {
             .body("quantidade", equalTo(produtoCriado.getQuantidade()))
             .body(matchesJsonSchemaInClasspath("schemas/listar-produto-schema.json"));
     }
+
+    @Test(
+        dependsOnMethods = "listarProduto",
+        description = "Deve editar o produto já cadastrado"
+    )
+    public void editarProduto() {
+        // cria um novo objeto com dados atualizados
+        Produto produtoEditado = new Produto(
+        produtoCriado.getNome() + " - Edição",
+        produtoCriado.getPreco() + 50,
+        produtoCriado.getDescricao() + " (atualizado)",
+        produtoCriado.getQuantidade() + 10
+        );
+
+        given()
+            .contentType("application/json")
+            .header("Authorization", "Bearer " + TokenHolder.token)
+            .pathParam("id", produtoId)
+            .log().all()
+            .body(produtoEditado)
+        .when()
+            .put("/produtos/{id}")
+        .then()
+            .log().all()
+            .statusCode(200)
+            .body("message", equalTo("Registro alterado com sucesso"))
+            .body(matchesJsonSchemaInClasspath("schemas/editar-produto-schema.json"));
+
+    }
+
+    @Test(
+        dependsOnMethods = "editarProduto",
+        description = "Deve excluir o produto cadastrado pelo id"
+    )
+    public void excluirProduto() {
+        given()
+            .header("Authorization", "Bearer " + TokenHolder.token)
+            .pathParam("id", produtoId)
+            .log().all()
+        .when()
+            .delete("/produtos/{id}")
+        .then()
+            .log().all()
+            .statusCode(200)
+            .body("message", equalTo("Registro excluído com sucesso"))
+            .body(matchesJsonSchemaInClasspath("schemas/excluir-produto-schema.json"));
+    }
+
+    @Test(
+        dependsOnMethods = "excluirProduto",
+        description = "Não deve encontrar produto já excluído"
+    )
+    public void listarProdutoExcluido() {
+        given()
+            .header("Authorization", "Bearer " + TokenHolder.token)
+            .pathParam("id", produtoId)
+            .log().all()
+        .when()
+            .get("/produtos/{id}")
+        .then()
+            .log().all()
+            .statusCode(400)
+            .body("message", equalTo("Produto não encontrado"))
+            .body(matchesJsonSchemaInClasspath("schemas/listar-produto-excluido-schema.json"));
+    }
+
 }
