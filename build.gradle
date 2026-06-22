@@ -16,6 +16,9 @@ dependencies {
     // RestAssured
     testImplementation 'io.rest-assured:rest-assured:5.5.6'
 
+    // RestAssured Json-schema-validator
+    testImplementation 'io.rest-assured:json-schema-validator:5.4.0'
+
     // SLF4J
     implementation 'org.slf4j:slf4j-api:2.0.12'
     runtimeOnly 'org.slf4j:slf4j-simple:2.0.12'
