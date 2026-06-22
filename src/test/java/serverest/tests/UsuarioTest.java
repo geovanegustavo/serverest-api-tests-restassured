@@ -18,7 +18,7 @@ public class UsuarioTest {
         RestAssured.baseURI = "https://serverest.dev";
     }
 
-    @Test
+    @Test(description = "Deve cadastrar um usuário administrador com credenciais válidas")
     public void criarUsuarioAdmin() {
         String email = UsuarioHelper.gerarEmail();
         String senha = "1234";

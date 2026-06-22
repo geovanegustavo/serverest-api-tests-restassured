@@ -14,7 +14,10 @@ public class LoginTest {
         RestAssured.baseURI = "https://serverest.dev";
     }
 
-    @Test(dependsOnMethods = "serverest.tests.UsuarioTest.criarUsuarioAdmin")
+    @Test(
+            dependsOnMethods = "serverest.tests.UsuarioTest.criarUsuarioAdmin",
+            description = "Deve logar usuário administrador com credenciais válidas"
+    )
     public void loginAdmin() {
         String body = "{ \"email\": \"" + TokenHolder.email + "\", \"password\": \"" + TokenHolder.password + "\" }";
 
