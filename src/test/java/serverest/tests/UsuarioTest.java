@@ -6,10 +6,9 @@ import serverest.model.Usuario;
 import serverest.util.TokenHolder;
 import serverest.util.UsuarioHelper;
 
+import static org.hamcrest.Matchers.*;
 import static serverest.util.Mensagens.*;
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
 import static io.restassured.module.jsv.JsonSchemaValidator.*;
 
 public class UsuarioTest {
@@ -24,7 +23,7 @@ public class UsuarioTest {
     Usuario usuarioCriado = new Usuario("Admin QA", email, senha, "true");
 
     @Test(description = "Deve cadastrar um usuário administrador com credenciais válidas")
-    public void criarUsuarioAdmin() {
+    public void cadastrarUsuarioAdmin() {
         usuarioId = given()
             .contentType("application/json")
             .log().all()
@@ -45,7 +44,7 @@ public class UsuarioTest {
     }
 
     @Test(
-            dependsOnMethods = "criarUsuarioAdmin",
+            dependsOnMethods = "cadastrarUsuarioAdmin",
             description = "Deve listar o usuário cadastrado pelo id"
     )
     public void listarUsuarioPorId() {
@@ -63,5 +62,26 @@ public class UsuarioTest {
             .body("password", equalTo(usuarioCriado.getPassword()))
             .body("administrador", equalTo(usuarioCriado.getAdministrador()))
             .body(matchesJsonSchemaInClasspath("schemas/usuario/listar-usuario-schema.json"));
+    }
+
+    @Test(
+            dependsOnMethods = "cadastrarUsuarioAdmin",
+            description = "Deve pesquisar usuario cadastrado pelo nome"
+    )
+    public void pesquisarUsuarioPorNome() {
+        given()
+            .queryParam("nome", usuarioCriado.getNome())
+            .log().all()
+        .when()
+            .get("/usuarios")
+        .then()
+            .log().all()
+            .statusCode(200)
+            .body("usuarios._id", hasItem(usuarioId))
+            .body("usuarios.nome", hasItem(usuarioCriado.getNome()))
+            .body("usuarios.email", hasItem(usuarioCriado.getEmail()))
+            .body("usuarios.password", hasItem(usuarioCriado.getPassword()))
+            .body("usuarios.administrador", hasItem(usuarioCriado.getAdministrador()))
+            .body(matchesJsonSchemaInClasspath("schemas/usuario/pesquisar-usuario-schema.json"));
     }
 }
