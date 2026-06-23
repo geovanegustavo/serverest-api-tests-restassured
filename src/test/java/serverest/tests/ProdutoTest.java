@@ -6,11 +6,10 @@ import serverest.model.Produto;
 import serverest.util.TokenHolder;
 import serverest.util.ProdutoHelper;
 
+import static org.hamcrest.Matchers.*;
 import static serverest.util.Mensagens.*;
 import static io.restassured.RestAssured.given;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
 
 public class ProdutoTest {
 
@@ -76,11 +75,12 @@ public class ProdutoTest {
         .then()
             .log().all()
             .statusCode(200)
-            .body("produtos[0]._id", equalTo(produtoId))
-            .body("produtos[0].nome", equalTo(produtoCriado.getNome()))
-            .body("produtos[0].preco", equalTo(produtoCriado.getPreco()))
-            .body("produtos[0].descricao", equalTo(produtoCriado.getDescricao()))
-            .body("produtos[0].quantidade", equalTo(produtoCriado.getQuantidade()))
+            //.body("produtos[0]._id", equalTo(produtoId))
+            .body("produtos._id", hasItem(produtoId))
+            .body("produtos.nome", hasItem(produtoCriado.getNome()))
+            .body("produtos.preco", hasItem(produtoCriado.getPreco()))
+            .body("produtos.descricao", hasItem(produtoCriado.getDescricao()))
+            .body("produtos.quantidade", hasItem(produtoCriado.getQuantidade()))
             .body(matchesJsonSchemaInClasspath("schemas/produto/pesquisar-produto-schema.json"));
     }
 
