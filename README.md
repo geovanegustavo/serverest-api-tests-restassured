@@ -9,7 +9,7 @@
 
 Projeto de automação de testes de API REST desenvolvido em **Java** com **REST Assured** e **TestNG**, utilizando a API pública [ServeRest](https://serverest.dev) como alvo dos testes.
 
-Este projeto tem como objetivo aplicar e consolidar práticas de automação de testes de API, incluindo validação de contratos via JSON Schema, cobertura de diferentes cenários de resposta (sucesso, autenticação, dados inválidos) e execução contínua via GitHub Actions.
+Este projeto tem como objetivo aplicar e consolidar práticas de automação de testes de API, incluindo validação de contratos via JSON Schema, cobertura de fluxos completos de CRUD e execução contínua via GitHub Actions.
 
 ---
 
@@ -28,13 +28,14 @@ Este projeto tem como objetivo aplicar e consolidar práticas de automação de 
 
 ## Sobre o Projeto
 
-O [ServeRest](https://serverest.dev) é uma API REST que simula uma loja virtual e foi criada especificamente para estudos de testes de API. Neste projeto, os testes automatizados cobrem os principais endpoints da API, com foco em:
+O [ServeRest](https://serverest.dev) é uma API REST que simula uma loja virtual e foi criada especificamente para estudos de testes de API. Neste projeto, os testes automatizados cobrem os principais endpoints da API com foco em:
 
 - Validação de **status codes** de resposta
 - Validação do **corpo da resposta** (response body)
 - Validação de **contratos via JSON Schema**
-- Cenários de **autenticação** (token válido, inválido, ausente)
-- Cenários de **dados inválidos** e mensagens de erro esperadas
+- Fluxos completos de **CRUD** para usuários e produtos
+- Cenários de **autenticação** com token JWT
+- Cenários de **exceção** (produto duplicado, token ausente, ID inexistente)
 
 ---
 
@@ -58,18 +59,26 @@ O [ServeRest](https://serverest.dev) é uma API REST que simula uma loja virtual
 serverest-api-tests-restassured/
 ├── .github/
 │   └── workflows/
-│       └── ci.yml                  # Pipeline de CI com GitHub Actions
+│       └── ci.yml                        # Pipeline de CI com GitHub Actions
 ├── src/
 │   └── test/
 │       ├── java/
-│       │   ├── tests/              # Classes de teste por endpoint
-│       │   └── ...                 # Configurações base, utilitários, POJOs
+│       │   └── serverest/
+│       │       ├── tests/
+│       │       │   ├── LoginTest.java    # Testes do endpoint POST /login
+│       │       │   ├── UsuarioTest.java  # Testes dos endpoints de /usuarios
+│       │       │   └── ProdutoTest.java  # Testes dos endpoints de /produtos
+│       │       ├── model/                # POJOs (Usuario, Produto)
+│       │       └── util/                 # Helpers, TokenHolder, Mensagens
 │       └── resources/
-│           ├── testng.xml          # Suite de execução dos testes
-│           └── schemas/            # Schemas JSON para validação de contrato
-├── build.gradle                    # Configuração do projeto e dependências
+│           ├── testng.xml                # Suite de execução dos testes
+│           └── schemas/                  # JSON Schemas para validação de contrato
+│               ├── login/
+│               ├── usuario/
+│               └── produto/
+├── build.gradle
 ├── settings.gradle
-├── gradlew / gradlew.bat           # Gradle Wrapper
+├── gradlew / gradlew.bat
 └── README.md
 ```
 
@@ -114,23 +123,50 @@ Após a execução, o relatório do TestNG estará disponível em:
 build/reports/tests/test/index.html
 ```
 
-Abra o arquivo no seu navegador para visualizar os resultados detalhados.
-
 ---
 
 ## Cenários de Teste
 
-Os testes cobrem os seguintes endpoints e cenários do ServeRest:
+### 👤 `UsuarioTest` — Endpoints `/usuarios`
 
-### `POST /login`
-| Cenário | Status Esperado |
-|---|---|
-| Login com credenciais válidas | 200 OK |
-| Login com senha inválida | 400 Bad Request |
-| Login sem corpo na requisição | 400 Bad Request |
-| Validação do contrato JSON Schema (200) | Schema válido |
+| Método | Endpoint | Cenário | Status Esperado |
+|---|---|---|---|
+| POST | `/usuarios` | Deve cadastrar um usuário administrador com credenciais válidas | 201 Created |
+| POST | `/usuarios` | Deve cadastrar um usuário comum com credenciais válidas | 201 Created |
+| GET | `/usuarios/{id}` | Deve listar o usuário cadastrado pelo id | 200 OK |
+| GET | `/usuarios` | Deve pesquisar usuário cadastrado pelo nome | 200 OK |
+| PUT | `/usuarios/{id}` | Deve editar o usuário já cadastrado | 200 OK |
+| PUT | `/usuarios/{id}` | Deve cadastrar o usuário quando o id informado não existe | 201 Created |
+| DELETE | `/usuarios/{id}` | Deve excluir o usuário cadastrado pelo id | 200 OK |
 
-> Novos endpoints e cenários serão adicionados progressivamente.
+---
+
+### 🔐 `LoginTest` — Endpoint `/login`
+
+| Método | Endpoint | Cenário | Status Esperado |
+|---|---|---|---|
+| POST | `/login` | Deve logar usuário administrador com credenciais válidas e retornar token JWT | 200 OK |
+
+> O token retornado é armazenado via `TokenHolder` e reutilizado nos testes de `/produtos`.
+
+---
+
+### 📦 `ProdutoTest` — Endpoints `/produtos`
+
+| Método | Endpoint | Cenário | Status Esperado |
+|---|---|---|---|
+| POST | `/produtos` | Deve cadastrar um produto aleatório na base de dados | 201 Created |
+| GET | `/produtos/{id}` | Deve listar o produto cadastrado pelo id | 200 OK |
+| GET | `/produtos` | Deve pesquisar produto cadastrado pelo nome | 200 OK |
+| PUT | `/produtos/{id}` | Deve editar o produto já cadastrado | 200 OK |
+| DELETE | `/produtos/{id}` | Deve excluir o produto cadastrado pelo id | 200 OK |
+| GET | `/produtos/{id}` | Não deve encontrar produto já excluído | 400 Bad Request |
+| POST | `/produtos` | NÃO deve cadastrar um produto já existente na base de dados | 400 Bad Request |
+| POST | `/produtos` | NÃO deve cadastrar um produto sem token de autenticação | 401 Unauthorized |
+
+---
+
+> Todos os cenários incluem validação de **contrato JSON Schema** e verificação das **mensagens de retorno** da API.
 
 ---
 
@@ -147,7 +183,7 @@ O arquivo de configuração do workflow está em:
 
 ## Autor
 
-**Geovane Gustavo Torres**
+**Geovane Gustavo**
 - GitHub: [@geovanegustavo](https://github.com/geovanegustavo)
 
 ---
