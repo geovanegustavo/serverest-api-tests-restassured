@@ -6,6 +6,7 @@ import serverest.model.Produto;
 import serverest.util.TokenHolder;
 import serverest.util.ProdutoHelper;
 
+import static serverest.util.Mensagens.*;
 import static io.restassured.RestAssured.given;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static org.hamcrest.Matchers.equalTo;
@@ -16,13 +17,6 @@ public class ProdutoTest {
     static {
         RestAssured.baseURI = "https://serverest.dev";
     }
-
-    private static final String MSG_CADASTRO_SUCESSO = "Cadastro realizado com sucesso";
-    private static final String MSG_REGISTRO_ALTERADO = "Registro alterado com sucesso";
-    private static final String MSG_REGISTRO_EXCLUIDO = "Registro excluído com sucesso";
-    private static final String MSG_PRODUTO_EXISTENTE = "Já existe produto com esse nome";
-    private static final String MSG_TOKEN_INVALIDO = "Token de acesso ausente, inválido, expirado ou usuário do token não existe mais";
-    private static final String MSG_PRODUTO_NAO_ENCONTRADO = "Produto não encontrado";
 
     String produtoId;
     Produto produtoCriado = ProdutoHelper.gerarProdutoAleatorio();
@@ -41,7 +35,7 @@ public class ProdutoTest {
             .statusCode(201)
             .body("message", equalTo(MSG_CADASTRO_SUCESSO))
             .body("_id", notNullValue())
-            .body(matchesJsonSchemaInClasspath("schemas/cadastrar-produto-schema.json"))
+            .body(matchesJsonSchemaInClasspath("schemas/produto/cadastrar-produto-schema.json"))
             .extract()
             .path("_id");
     }
@@ -65,7 +59,7 @@ public class ProdutoTest {
             .body("preco", equalTo(produtoCriado.getPreco()))
             .body("descricao", equalTo(produtoCriado.getDescricao()))
             .body("quantidade", equalTo(produtoCriado.getQuantidade()))
-            .body(matchesJsonSchemaInClasspath("schemas/listar-produto-schema.json"));
+            .body(matchesJsonSchemaInClasspath("schemas/produto/listar-produto-schema.json"));
     }
 
     @Test(
@@ -87,7 +81,7 @@ public class ProdutoTest {
             .body("produtos[0].preco", equalTo(produtoCriado.getPreco()))
             .body("produtos[0].descricao", equalTo(produtoCriado.getDescricao()))
             .body("produtos[0].quantidade", equalTo(produtoCriado.getQuantidade()))
-            .body(matchesJsonSchemaInClasspath("schemas/pesquisar-produto-schema.json"));
+            .body(matchesJsonSchemaInClasspath("schemas/produto/pesquisar-produto-schema.json"));
     }
 
     @Test(
@@ -115,8 +109,7 @@ public class ProdutoTest {
             .log().all()
             .statusCode(200)
             .body("message", equalTo(MSG_REGISTRO_ALTERADO))
-            .body(matchesJsonSchemaInClasspath("schemas/editar-produto-schema.json"));
-
+            .body(matchesJsonSchemaInClasspath("schemas/produto/editar-produto-schema.json"));
     }
 
     @Test(
@@ -134,7 +127,7 @@ public class ProdutoTest {
             .log().all()
             .statusCode(200)
             .body("message", equalTo(MSG_REGISTRO_EXCLUIDO))
-            .body(matchesJsonSchemaInClasspath("schemas/excluir-produto-schema.json"));
+            .body(matchesJsonSchemaInClasspath("schemas/produto/excluir-produto-schema.json"));
     }
 
     @Test(
@@ -152,7 +145,7 @@ public class ProdutoTest {
             .log().all()
             .statusCode(400)
             .body("message", equalTo(MSG_PRODUTO_NAO_ENCONTRADO))
-            .body(matchesJsonSchemaInClasspath("schemas/listar-produto-excluido-schema.json"));
+            .body(matchesJsonSchemaInClasspath("schemas/produto/listar-produto-excluido-schema.json"));
     }
 
     /**
@@ -164,7 +157,6 @@ public class ProdutoTest {
         description = "NÃO deve cadastrar um produto já existente na base de dados"
     )
     public void cadastrarProdutoExistente() {
-
         given()
             .contentType("application/json")
             .header("Authorization", "Bearer " + TokenHolder.token)
@@ -177,8 +169,7 @@ public class ProdutoTest {
             .log().all()
             .statusCode(400)
             .body("message", equalTo(MSG_PRODUTO_EXISTENTE))
-            .body(matchesJsonSchemaInClasspath("schemas/cadastrar-produto-cadastrado-schema.json"));
-
+            .body(matchesJsonSchemaInClasspath("schemas/produto/cadastrar-produto-cadastrado-schema.json"));
     }
 
     @Test(
@@ -186,7 +177,6 @@ public class ProdutoTest {
         description = "NÃO deve cadastrar um produto sem token de autenticação"
     )
     public void cadastrarProdutoSemToken() {
-
         given()
             .contentType("application/json")
             //.header("Authorization", "Bearer " + TokenHolder.token)
@@ -199,8 +189,7 @@ public class ProdutoTest {
             .log().all()
             .statusCode(401)
             .body("message", equalTo(MSG_TOKEN_INVALIDO))
-            .body(matchesJsonSchemaInClasspath("schemas/cadastrar-produto-sem-token-schema.json"));
-
+            .body(matchesJsonSchemaInClasspath("schemas/produto/cadastrar-produto-sem-token-schema.json"));
     }
 
 }

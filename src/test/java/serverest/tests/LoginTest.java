@@ -32,7 +32,7 @@ public class LoginTest {
             .log().all()
             .statusCode(200)
             .body("message", equalTo("Login realizado com sucesso"))
-            .body(matchesJsonSchemaInClasspath("schemas/login-schema.json"))
+            .body(matchesJsonSchemaInClasspath("schemas/login/realizar-login-schema.json"))
             .extract().response();
 
         TokenHolder.token = response.jsonPath().getString("authorization").replace("Bearer ", "");
