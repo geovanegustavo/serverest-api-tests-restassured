@@ -147,7 +147,7 @@ O arquivo de configuração do workflow está em:
 
 ## Autor
 
-**Geovane Gustavo**
+**Geovane Gustavo Torres**
 - GitHub: [@geovanegustavo](https://github.com/geovanegustavo)
 
 ---
