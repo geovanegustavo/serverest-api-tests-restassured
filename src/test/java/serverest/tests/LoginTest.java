@@ -5,6 +5,7 @@ import io.restassured.response.Response;
 import org.testng.annotations.Test;
 import serverest.util.TokenHolder;
 
+import static serverest.util.Mensagens.*;
 import static io.restassured.RestAssured.given;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static org.hamcrest.Matchers.equalTo;
@@ -19,7 +20,7 @@ public class LoginTest {
             dependsOnMethods = "cadastrarUsuarioAdmin",
             description = "Deve logar usuário administrador com credenciais válidas"
     )
-    public void loginAdmin() {
+    public void realizarLoginAdmin() {
         String body = "{ \"email\": \"" + TokenHolder.email + "\", \"password\": \"" + TokenHolder.password + "\" }";
 
         Response response = given()
@@ -31,7 +32,7 @@ public class LoginTest {
         .then()
             .log().all()
             .statusCode(200)
-            .body("message", equalTo("Login realizado com sucesso"))
+            .body("message", equalTo(MSG_LOGIN_SUCESSO))
             .body(matchesJsonSchemaInClasspath("schemas/login/realizar-login-schema.json"))
             .extract().response();
 
